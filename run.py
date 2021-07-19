@@ -1,6 +1,6 @@
 #coding:utf-8
 import pandas as pd
-import ccxt
+import binance
 from SendTestReportMail import *
 import traceback
 pd.set_option('expand_frame_repr', False)  # 当列太多时不换行
@@ -9,13 +9,13 @@ pd.set_option('expand_frame_repr', False)  # 当列太多时不换行
 def exchange_func():
     res = None
     # =====创建ccxt交易所
-    exchange = ccxt.okex({'hostname': 'okex.com'})  # 其他交易所为huobipro, binance, okex
+    exchange = binance.binance()  # 其他交易所为huobipro, binance, okex
     # =====设置参数
     time_interval = '1d'
     N = 20  # 计算最近N天的涨跌幅
     change_dict = {}
     try:
-        # =====获取最新数据，计算涨跌幅
+    # =====获取最新数据，计算涨跌幅
         for symbol in ['BTC/USDT', 'ETH/USDT']:
             # 获取数据
             df = exchange.fetch_ohlcv(symbol=symbol, timeframe=time_interval, limit=N+5)
@@ -28,9 +28,9 @@ def exchange_func():
             df['最近N天涨跌幅'] = df['close'].pct_change(N)
             change_dict[symbol] = df.iloc[-1]['最近N天涨跌幅']
         print(change_dict)
-    except Exception as e:
 
-        res = traceback.print_exc()
+    except Exception as e:
+        res = traceback.format_exc()
         return res
 
     # =====判断操作
@@ -49,5 +49,5 @@ def exchange_func():
         res = str(change_dict)+'\n'+'以太坊涨幅大于0且大于比特币涨幅，"买入以太坊"'
 
     return res
-
-send_test_report_mail(exchange_func())
+if __name__ == '__main__':
+    send_test_report_mail(exchange_func())
